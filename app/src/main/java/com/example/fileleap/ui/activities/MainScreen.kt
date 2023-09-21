@@ -1,14 +1,9 @@
-package com.example.fileleap
+package com.example.fileleap.ui.activities
 
-import android.annotation.SuppressLint
-import android.graphics.Paint.Style
-import android.os.Bundle
 import android.widget.Toast
-import com.example.fileleap.ui.theme.Primary
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -18,24 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -44,30 +29,27 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.fileleap.R
 import com.example.fileleap.ui.theme.FileLeapTheme
+import com.example.fileleap.ui.theme.Primary
 import com.example.fileleap.ui.theme.Secondary
 import com.example.fileleap.ui.theme.Typography
 import kotlinx.coroutines.launch
@@ -76,21 +58,11 @@ data class NavigationItem(
     val title: String,
 )
 
-class MainActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            FileLeapTheme{
-                MainScreen()
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(){
+fun MainScreen(
+    selectFile: () -> Unit
+){
     val items = listOf(
         NavigationItem(
             title = "Home"
@@ -189,7 +161,10 @@ fun MainScreen(){
             ){ scaffoldPadding ->
                 when(selectedItemIndex){
                     0->{
-                        HomePage(scaffoldPadding = scaffoldPadding)
+                        HomePage(
+                            scaffoldPadding = scaffoldPadding,
+                            selectFile
+                        )
                     }
                     else->{
 
@@ -203,7 +178,10 @@ fun MainScreen(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(scaffoldPadding: PaddingValues){
+fun HomePage(
+    scaffoldPadding: PaddingValues,
+    selectFile: () -> Unit
+){
     Column(
         modifier = Modifier
             .padding(scaffoldPadding)
@@ -211,6 +189,7 @@ fun HomePage(scaffoldPadding: PaddingValues){
         horizontalAlignment = Alignment.CenterHorizontally
     ){
 
+        //Upper Texts
         Column(
             modifier = Modifier
                 .padding(vertical = 32.dp)
@@ -230,16 +209,19 @@ fun HomePage(scaffoldPadding: PaddingValues){
             )
         }
 
+        //Sender and Receiver Box
         Column(
             modifier = Modifier.padding(vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
+            //Sender Box
             Column(
                 modifier = Modifier
                     .weight(4f)
                     .fillMaxWidth()
                     .background(Secondary, RoundedCornerShape(16.dp))
-                    .padding(8.dp),
+                    .padding(8.dp)
+                    .clickable { selectFile() },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
@@ -268,6 +250,7 @@ fun HomePage(scaffoldPadding: PaddingValues){
                 )
 
             }
+
             Text(
                 text = "OR",
                 style = Typography.titleLarge,
@@ -276,6 +259,8 @@ fun HomePage(scaffoldPadding: PaddingValues){
                     .weight(1f)
                     .padding(8.dp)
             )
+
+            //Receiver Box
             Column(
                 modifier = Modifier
                     .weight(4f)
@@ -318,7 +303,7 @@ fun HomePage(scaffoldPadding: PaddingValues){
                 Button(
                     onClick = {
                         if(code.length!=6){
-                            Toast.makeText(context,"Invalid Code",Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,"Invalid Code", Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors =  ButtonDefaults.buttonColors(
@@ -343,6 +328,6 @@ fun HomePage(scaffoldPadding: PaddingValues){
 @Composable
 fun MainScreenPreview() {
     FileLeapTheme {
-        MainScreen()
+        MainScreen({})
     }
 }
