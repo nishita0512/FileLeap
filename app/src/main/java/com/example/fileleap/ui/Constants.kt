@@ -4,6 +4,7 @@ import android.net.Uri
 
 object Constants {
 
-    var fileUri: Uri? = null
+    var selectedFile: Uri? = null
+    var senderDocumentId = ""
 
 }

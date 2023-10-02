@@ -29,6 +29,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -61,7 +63,8 @@ data class NavigationItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    selectFile: () -> Unit
+    selectFile: () -> Unit,
+    receiveFile: (firestoreDocumentId: String) -> Unit
 ){
     val items = listOf(
         NavigationItem(
@@ -163,7 +166,8 @@ fun MainScreen(
                     0->{
                         HomePage(
                             scaffoldPadding = scaffoldPadding,
-                            selectFile
+                            selectFile,
+                            receiveFile
                         )
                     }
                     else->{
@@ -180,7 +184,8 @@ fun MainScreen(
 @Composable
 fun HomePage(
     scaffoldPadding: PaddingValues,
-    selectFile: () -> Unit
+    selectFile: () -> Unit,
+    receiveFile: (firestoreDocumentId: String) -> Unit
 ){
     Column(
         modifier = Modifier
@@ -273,7 +278,7 @@ fun HomePage(
                     mutableStateOf("")
                 }
                 val context = LocalContext.current
-                val maxChar = 6
+                val maxChar = 24
                 Text(
                     text = "Enter Receiving Code",
                     style = Typography.titleMedium,
@@ -289,6 +294,9 @@ fun HomePage(
                     },
                     maxLines = 1,
                     textStyle = Typography.bodyMedium,
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = Color.White
+                    ),
                     modifier = Modifier
                         .weight(2f)
                         .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -302,15 +310,19 @@ fun HomePage(
                 )
                 Button(
                     onClick = {
-                        if(code.length!=6){
+                        if(code.length>24){
                             Toast.makeText(context,"Invalid Code", Toast.LENGTH_SHORT).show()
+                        }
+                        else{
+                            receiveFile(code)
                         }
                     },
                     colors =  ButtonDefaults.buttonColors(
                         containerColor = Primary,
                         contentColor = Color.Black
                     ),
-                    modifier = Modifier.weight(1.5f)
+                    modifier = Modifier
+                        .weight(1.5f)
                         .padding(vertical = 4.dp)
                 ) {
                     Text(
@@ -328,6 +340,6 @@ fun HomePage(
 @Composable
 fun MainScreenPreview() {
     FileLeapTheme {
-        MainScreen({})
+        MainScreen({},{})
     }
 }

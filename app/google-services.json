@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "31830623218",
+    "project_id": "file-leap",
+    "storage_bucket": "file-leap.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31830623218:android:7c67e3d06ad8b11942e16b",
+        "android_client_info": {
+          "package_name": "com.example.fileleap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFG8hbg_cejVNSg_jD0S1O9_odCSmGc-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
