@@ -2,7 +2,7 @@ package com.example.fileleap.ui.webrtc
 
 import org.webrtc.*
 
-open class MyPeerObserver : PeerConnection.Observer{
+open class CustomPeerConnectionObserver : PeerConnection.Observer{
     override fun onSignalingChange(p0: PeerConnection.SignalingState?) {
 
     }
@@ -36,4 +36,5 @@ open class MyPeerObserver : PeerConnection.Observer{
 
     override fun onAddTrack(p0: RtpReceiver?, p1: Array<out MediaStream>?) {
     }
+
 }

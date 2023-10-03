@@ -69,7 +69,8 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    implementation("com.mesibo.api:webrtc:1.0.5")
+//    implementation("com.mesibo.api:webrtc:1.0.5")
+    implementation("org.webrtc:google-webrtc:1.0.22672")
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))

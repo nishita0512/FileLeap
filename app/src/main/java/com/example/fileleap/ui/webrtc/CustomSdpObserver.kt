@@ -3,7 +3,7 @@ package com.example.fileleap.ui.webrtc
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 
-open class MySdpObserver : SdpObserver{
+open class CustomSdpObserver : SdpObserver{
     override fun onCreateSuccess(sessionDescription: SessionDescription) {
     }
 

@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fileleap.R
+import com.example.fileleap.ui.Constants
 import com.example.fileleap.ui.theme.FileLeapTheme
 import com.example.fileleap.ui.theme.Primary
 import com.example.fileleap.ui.theme.Secondary
@@ -64,7 +65,7 @@ data class NavigationItem(
 @Composable
 fun MainScreen(
     selectFile: () -> Unit,
-    receiveFile: (firestoreDocumentId: String) -> Unit
+    receiveFile: () -> Unit
 ){
     val items = listOf(
         NavigationItem(
@@ -185,7 +186,7 @@ fun MainScreen(
 fun HomePage(
     scaffoldPadding: PaddingValues,
     selectFile: () -> Unit,
-    receiveFile: (firestoreDocumentId: String) -> Unit
+    receiveFile: () -> Unit
 ){
     Column(
         modifier = Modifier
@@ -314,7 +315,8 @@ fun HomePage(
                             Toast.makeText(context,"Invalid Code", Toast.LENGTH_SHORT).show()
                         }
                         else{
-                            receiveFile(code)
+                            Constants.documentId = code
+                            receiveFile()
                         }
                     },
                     colors =  ButtonDefaults.buttonColors(
