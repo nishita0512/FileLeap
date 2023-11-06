@@ -29,7 +29,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,6 +36,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -65,7 +65,10 @@ data class NavigationItem(
 @Composable
 fun MainScreen(
     selectFile: () -> Unit,
-    receiveFile: () -> Unit
+    receiveFile: () -> Unit,
+    screen: Int,
+    bytesReceived: Long,
+    bytesSent: Long
 ){
     val items = listOf(
         NavigationItem(
@@ -165,10 +168,13 @@ fun MainScreen(
             ){ scaffoldPadding ->
                 when(selectedItemIndex){
                     0->{
-                        HomePage(
+                        FileSharing(
                             scaffoldPadding = scaffoldPadding,
                             selectFile,
-                            receiveFile
+                            receiveFile,
+                            screen,
+                            bytesReceived,
+                            bytesSent
                         )
                     }
                     else->{
@@ -181,167 +187,43 @@ fun MainScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(
+fun FileSharing(
     scaffoldPadding: PaddingValues,
     selectFile: () -> Unit,
-    receiveFile: () -> Unit
+    receiveFile: () -> Unit,
+    screen: Int,
+    bytesReceived: Long,
+    bytesSent: Long
 ){
-    Column(
-        modifier = Modifier
-            .padding(scaffoldPadding)
-            .padding(48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-
-        //Upper Texts
-        Column(
-            modifier = Modifier
-                .padding(vertical = 32.dp)
-                .fillMaxWidth()
-        ){
-            Text(
-                text = "Simplified file sharing, speed and security redefined.",
-                style = Typography.titleLarge,
-                color = Primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "Send files of any size directly from your device without ever storing anything online.",
-                style = Typography.bodyLarge,
-                color = Color.White,
-                modifier = Modifier.padding(top = 8.dp)
+    when(screen){
+        0 -> {
+            SendOrReceive(
+                scaffoldPadding,
+                selectFile,
+                receiveFile
             )
         }
-
-        //Sender and Receiver Box
-        Column(
-            modifier = Modifier.padding(vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            //Sender Box
-            Column(
-                modifier = Modifier
-                    .weight(4f)
-                    .fillMaxWidth()
-                    .background(Secondary, RoundedCornerShape(16.dp))
-                    .padding(8.dp)
-                    .clickable { selectFile() },
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_add),
-                    contentDescription = "Add File",
-                    contentScale = ContentScale.Inside,
-                    modifier = Modifier
-                        .weight(5f)
-                        .padding(8.dp)
-                )
-                Text(
-                    text = "Select  File to share",
-                    style = Typography.titleMedium,
-                    color = Color.White,
-                    modifier = Modifier
-                        .weight(3f)
-                        .padding(8.dp)
-                )
-                Text(
-                    text = "up to 10GB",
-                    style = Typography.bodyMedium,
-                    color = Color.White,
-                    modifier = Modifier
-                        .weight(2f)
-                        .padding(4.dp)
-                )
-
-            }
-
-            Text(
-                text = "OR",
-                style = Typography.titleLarge,
-                color = Color.White,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp)
+        1 -> {
+            FileSelected(
+                scaffoldPadding
             )
-
-            //Receiver Box
-            Column(
-                modifier = Modifier
-                    .weight(4f)
-                    .fillMaxWidth()
-                    .background(Secondary, RoundedCornerShape(16.dp))
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                var code by rememberSaveable {
-                    mutableStateOf("")
-                }
-                val context = LocalContext.current
-                val maxChar = 24
-                Text(
-                    text = "Enter Receiving Code",
-                    style = Typography.titleMedium,
-                    color = Color.White,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 4.dp)
-                )
-                OutlinedTextField(
-                    value = code,
-                    onValueChange = {
-                        if (it.length <= maxChar) code = it
-                    },
-                    maxLines = 1,
-                    textStyle = Typography.bodyMedium,
-                    colors = TextFieldDefaults.textFieldColors(
-                        textColor = Color.White
-                    ),
-                    modifier = Modifier
-                        .weight(2f)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    supportingText = {
-                        Text(
-                            text = "${code.length} / $maxChar",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.End,
-                        )
-                    },
-                )
-                Button(
-                    onClick = {
-                        if(code.length>24){
-                            Toast.makeText(context,"Invalid Code", Toast.LENGTH_SHORT).show()
-                        }
-                        else{
-                            Constants.documentId = code
-                            receiveFile()
-                        }
-                    },
-                    colors =  ButtonDefaults.buttonColors(
-                        containerColor = Primary,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier
-                        .weight(1.5f)
-                        .padding(vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Receive",
-                        style = Typography.bodyLarge,
-                    )
-                }
-            }
         }
-
+        2 -> {
+            Transferring(
+                scaffoldPadding,
+                bytesReceived,
+                bytesSent
+            )
+        }
     }
+
 }
 
 @Preview
 @Composable
 fun MainScreenPreview() {
     FileLeapTheme {
-        MainScreen({},{})
+        MainScreen({},{}, 1,0L,0L)
     }
 }

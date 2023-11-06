@@ -19,6 +19,13 @@ val clashGrotesk = FontFamily(
 )
 
 val Typography = Typography(
+    headlineLarge = TextStyle(
+        fontFamily = clashGrotesk,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.7.sp
+    ),
     bodyLarge = TextStyle(
         fontFamily = clashGrotesk,
         fontWeight = FontWeight.Normal,
