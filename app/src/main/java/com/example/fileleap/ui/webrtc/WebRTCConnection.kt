@@ -13,6 +13,8 @@ import com.example.fileleap.ui.Constants
 import com.example.fileleap.ui.Constants.TAG
 import com.example.fileleap.ui.Constants.fileSize
 import com.example.fileleap.ui.Constants.selectedFile
+import com.example.fileleap.ui.utils.AES
+import com.example.fileleap.ui.utils.BCrypt
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
 //    }
 
     fun initializeSenderPeerConnection(){
+        Constants.showProgressBar.value = true
         val initializationOptions: PeerConnectionFactory.InitializationOptions = PeerConnectionFactory.InitializationOptions.builder(applicationContext).createInitializationOptions()
         PeerConnectionFactory.initialize(initializationOptions)
         val options = PeerConnectionFactory.Options()
@@ -77,24 +80,25 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                     }
 
                     val dataChannelInit = DataChannel.Init()
-                    acknowledgementDataChannel = peerConnection?.createDataChannel("acknowledgementChannel", dataChannelInit)
-                    acknowledgementDataChannel?.registerObserver(object : DataChannel.Observer {
-                        override fun onBufferedAmountChange(previousAmount: Long) {
-                            // Handle buffered amount change
-                        }
-
-                        override fun onStateChange() {
-                            // Handle data channel state change
-                        }
-
-                        override fun onMessage(buffer: DataChannel.Buffer) {
-                            Log.d(TAG,"Acknowledgement Received")
-                            acknowledgementReceived = true
-                        }
-                    })
+//                    acknowledgementDataChannel = peerConnection?.createDataChannel("acknowledgementChannel", dataChannelInit)
+//                    acknowledgementDataChannel?.registerObserver(object : DataChannel.Observer {
+//                        override fun onBufferedAmountChange(previousAmount: Long) {
+//                            // Handle buffered amount change
+//                        }
+//
+//                        override fun onStateChange() {
+//                            // Handle data channel state change
+//                        }
+//
+//                        override fun onMessage(buffer: DataChannel.Buffer) {
+//                            Log.d(TAG,"Acknowledgement Received")
+//                            acknowledgementReceived = true
+//                        }
+//                    })
 
                     dataChannel = p0
-                    Constants.screen.value = 2
+                    Constants.showProgressBar.value = false
+                    Constants.screen.value = 3
                     Timer().schedule(object: TimerTask(){
                         override fun run() {
 //                            val buffer = ByteBuffer.wrap("Test".encodeToByteArray())
@@ -157,6 +161,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                 val offerData = hashMapOf(
                     "fileName" to Constants.fileName,
                     "fileSize" to Constants.fileSize.value,
+                    "hashedPassword" to Constants.hashedPassword.value,
                     "type" to sessionDescription.type.canonicalForm(),
                     "sdp" to sessionDescription.description
                 )
@@ -166,6 +171,8 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                 firestore.collection("offers").get().addOnCompleteListener{ getAllOffersTask ->
 
                     val noOfDocs = getAllOffersTask.result.documents.size
+                    //noOfDocs = 2
+                    //documentId = 0002
                     Constants.documentId = when (noOfDocs) {
                         in 1000..9999 -> {
                             noOfDocs.toString()
@@ -180,7 +187,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                             "000$noOfDocs"
                         }
                     }
-                    Constants.screen.value = 1
+                    Constants.screen.value = 2
                     Constants.isSender = true
                     Log.d(TAG,"Doc ID: ${Constants.documentId}")
                     firestore.collection("offers").document(Constants.documentId).set(offerData)
@@ -270,7 +277,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
     }
 
     fun initializeReceiverPeerConnection() {
-
+        Constants.showProgressBar.value = true
         val initializationOptions: PeerConnectionFactory.InitializationOptions = PeerConnectionFactory.InitializationOptions.builder(applicationContext).createInitializationOptions()
         PeerConnectionFactory.initialize(initializationOptions)
         val options = PeerConnectionFactory.Options()
@@ -305,8 +312,8 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                 }
 
                 override fun onDataChannel(p0: DataChannel?) {
-                    acknowledgementDataChannel = p0
-                    Log.d(TAG,"Acknowledgement Data Channel: ${p0?.label()}")
+//                    acknowledgementDataChannel = p0
+//                    Log.d(TAG,"Acknowledgement Data Channel: ${p0?.label()}")
                     super.onDataChannel(p0)
                 }
 
@@ -390,44 +397,61 @@ class WebRTCConnection constructor(val applicationContext: Context) {
 
                         Constants.fileSize.value = offerData["fileSize"].toString().toLong()
                         Constants.fileName = offerData["fileName"].toString()
-                        Constants.screen.value = 2
-                        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                        val file = File(downloadsDir,Constants.fileName)
-                        fileOutputStream = FileOutputStream(file, true)
-
-                        val offerSdp = offerData["sdp"] as String
-                        val offerType = SessionDescription.Type.OFFER
-                        val remoteOffer = SessionDescription(offerType, offerSdp)
-
-                        // Set the remote offer as the remote description
-                        Toast.makeText(applicationContext,"Receiver Connected to Sender", Toast.LENGTH_LONG).show()
-                        peerConnection?.setRemoteDescription(CustomSdpObserver(), remoteOffer)
-
-                        firestore.collection("offers").document(Constants.documentId).collection("senderIceCandidates").get().addOnCompleteListener { getReceiverIceCandidatesTask ->
-                            if(!getReceiverIceCandidatesTask.isSuccessful){
-                                Toast.makeText(applicationContext,"Failed to get sender Ice Candidates",
-                                    Toast.LENGTH_SHORT).show()
-                            }
-                            else{
-                                getReceiverIceCandidatesTask.result.documents.forEach {
-                                    peerConnection?.addIceCandidate(IceCandidate(it["sdpMid"].toString(), it["sdpMLineIndex"].toString().toInt(), it["sdp"].toString()))
-                                }
+                        Constants.hashedPassword.value = offerData["hashedPassword"].toString()
+                        if(!BCrypt.checkpw(Constants.password.value,Constants.hashedPassword.value)){
+                            Constants.apply{
+                                selectedFile = null
+                                fileName = ""
+                                fileSize.value = 0L
+                                bytesReceived.value = 0L
+                                bytesSent.value = 0L
+                                documentId = ""
+                                isSender = false
+                                screen.value = 0
+                                toastsToShowList.add("Wrong Password. Transfer Cancelled")
                             }
                         }
+                        else{
+                            Constants.showProgressBar.value = false
+                            Constants.screen.value = 3
+                            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            val file = File(downloadsDir,Constants.fileName)
+                            fileOutputStream = FileOutputStream(file, true)
 
-                        // Create an answer and set it as the local description
-                        peerConnection?.createAnswer(object : CustomSdpObserver() {
+                            val offerSdp = offerData["sdp"] as String
+                            val offerType = SessionDescription.Type.OFFER
+                            val remoteOffer = SessionDescription(offerType, offerSdp)
 
-                            override fun onCreateSuccess(sessionDescription: SessionDescription) {
-                                peerConnection?.setLocalDescription(
-                                    CustomSdpObserver(),
-                                    sessionDescription
-                                )
-                                // Send the answer sessionDescription to the other device through Firestore
-                                sendAnswer(sessionDescription)
+                            // Set the remote offer as the remote description
+                            Toast.makeText(applicationContext,"Receiver Connected to Sender", Toast.LENGTH_LONG).show()
+                            peerConnection?.setRemoteDescription(CustomSdpObserver(), remoteOffer)
+
+                            firestore.collection("offers").document(Constants.documentId).collection("senderIceCandidates").get().addOnCompleteListener { getReceiverIceCandidatesTask ->
+                                if(!getReceiverIceCandidatesTask.isSuccessful){
+                                    Toast.makeText(applicationContext,"Failed to get sender Ice Candidates",
+                                        Toast.LENGTH_SHORT).show()
+                                }
+                                else{
+                                    getReceiverIceCandidatesTask.result.documents.forEach {
+                                        peerConnection?.addIceCandidate(IceCandidate(it["sdpMid"].toString(), it["sdpMLineIndex"].toString().toInt(), it["sdp"].toString()))
+                                    }
+                                }
                             }
 
-                        }, MediaConstraints())
+                            // Create an answer and set it as the local description
+                            peerConnection?.createAnswer(object : CustomSdpObserver() {
+
+                                override fun onCreateSuccess(sessionDescription: SessionDescription) {
+                                    peerConnection?.setLocalDescription(
+                                        CustomSdpObserver(),
+                                        sessionDescription
+                                    )
+                                    // Send the answer sessionDescription to the other device through Firestore
+                                    sendAnswer(sessionDescription)
+                                }
+
+                            }, MediaConstraints())
+                        }
                     }
                 }
 
@@ -460,6 +484,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
             val contentResolver = applicationContext.contentResolver
             val inputStream = contentResolver.openInputStream(fileUri)
             val bufferSize = 1024 * 32
+            val passwordByteArray = Constants.password.value.toByteArray()
 
             inputStream?.use { input ->
                 val buffer = ByteArray(bufferSize)
@@ -467,7 +492,8 @@ class WebRTCConnection constructor(val applicationContext: Context) {
 
                 while(input.read(buffer).also { bytesRead = it } != -1) {
                     val chunk = buffer.copyOfRange(0, bytesRead)
-                    val byteBuffer = ByteBuffer.wrap(chunk)
+                    val encryptedChunk = AES.encrypt(chunk,passwordByteArray)
+                    val byteBuffer = ByteBuffer.wrap(encryptedChunk)
 
                     dataChannel.send(DataChannel.Buffer(byteBuffer, false))
                     Constants.bytesSent.value += bytesRead
@@ -487,6 +513,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                         documentId = ""
                         isSender = false
                         screen.value = 0
+                        toastsToShowList.add("File Sent Successfully")
                     }
 //                            Toast.makeText(applicationContext,"Transfer Completed",Toast.LENGTH_LONG).show()
                 }
@@ -531,8 +558,9 @@ class WebRTCConnection constructor(val applicationContext: Context) {
         withContext(Dispatchers.IO) {
 
             try{
-                val byteArray = ByteArray(buffer.data.capacity())
-                buffer.data.get(byteArray)
+                val encryptedByteArray = ByteArray(buffer.data.capacity())
+                buffer.data.get(encryptedByteArray)
+                val byteArray = AES.decrypt(encryptedByteArray,Constants.password.value.toByteArray())
                 Constants.bytesReceived.value += byteArray.size
                 Log.d(TAG, "Received Bytes: ${Constants.bytesReceived.value}")
 //                Toast.makeText(applicationContext,"Received: ${Constants.bytesReceived}",Toast.LENGTH_SHORT).show()
@@ -551,6 +579,7 @@ class WebRTCConnection constructor(val applicationContext: Context) {
                                 documentId = ""
                                 isSender = false
                                 screen.value = 0
+                                toastsToShowList.add("File Saved Successfully in Downloads Folder")
                             }
 //                            Toast.makeText(applicationContext,"Transfer Completed",Toast.LENGTH_LONG).show()
                         }

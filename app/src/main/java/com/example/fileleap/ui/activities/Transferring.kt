@@ -64,7 +64,6 @@ fun Transferring(
             modifier = Modifier.padding(vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
-            //Sender Box
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

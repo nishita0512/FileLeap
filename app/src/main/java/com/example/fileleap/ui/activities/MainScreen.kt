@@ -1,5 +1,6 @@
 package com.example.fileleap.ui.activities
 
+import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.fileleap.R
 import com.example.fileleap.ui.Constants
+import com.example.fileleap.ui.WebRTCViewModel
 import com.example.fileleap.ui.theme.FileLeapTheme
 import com.example.fileleap.ui.theme.Primary
 import com.example.fileleap.ui.theme.Secondary
@@ -68,7 +70,8 @@ fun MainScreen(
     receiveFile: () -> Unit,
     screen: Int,
     bytesReceived: Long,
-    bytesSent: Long
+    bytesSent: Long,
+    webRTCViewModel: WebRTCViewModel
 ){
     val items = listOf(
         NavigationItem(
@@ -174,7 +177,13 @@ fun MainScreen(
                             receiveFile,
                             screen,
                             bytesReceived,
-                            bytesSent
+                            bytesSent,
+                            webRTCViewModel
+                        )
+                    }
+                    1->{
+                        HowItWorks(
+
                         )
                     }
                     else->{
@@ -194,7 +203,8 @@ fun FileSharing(
     receiveFile: () -> Unit,
     screen: Int,
     bytesReceived: Long,
-    bytesSent: Long
+    bytesSent: Long,
+    webRTCViewModel: WebRTCViewModel
 ){
     when(screen){
         0 -> {
@@ -205,11 +215,17 @@ fun FileSharing(
             )
         }
         1 -> {
+            PasswordScreen(
+                scaffoldPadding,
+                webRTCViewModel
+            )
+        }
+        2 -> {
             FileSelected(
                 scaffoldPadding
             )
         }
-        2 -> {
+        3 -> {
             Transferring(
                 scaffoldPadding,
                 bytesReceived,
@@ -220,10 +236,15 @@ fun FileSharing(
 
 }
 
+@Composable
+fun HowItWorks(){
+
+}
+
 @Preview
 @Composable
 fun MainScreenPreview() {
     FileLeapTheme {
-        MainScreen({},{}, 1,0L,0L)
+        MainScreen({},{}, 1,0L,0L, WebRTCViewModel(Application()))
     }
 }

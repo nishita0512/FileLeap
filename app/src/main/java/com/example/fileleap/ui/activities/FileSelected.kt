@@ -105,7 +105,7 @@ fun FileSelected(
                         .padding(4.dp)
                 )
                 Text(
-                    text = "${Constants.fileSize}KB",
+                    text = "${Constants.fileSize.value}KB",
                     style = Typography.bodySmall,
                     color = Color.White,
                     modifier = Modifier

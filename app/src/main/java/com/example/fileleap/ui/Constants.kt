@@ -1,6 +1,7 @@
 package com.example.fileleap.ui
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 
 object Constants {
@@ -13,6 +14,10 @@ object Constants {
     var documentId = ""
     var isSender = false
     val screen = mutableStateOf(0)
+    val password = mutableStateOf("")
+    val hashedPassword = mutableStateOf("")
+    val toastsToShowList = ArrayList<String>()
+    val showProgressBar = mutableStateOf(false)
     const val TAG = "FileLeapDebugTag"
 
 }

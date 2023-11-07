@@ -132,7 +132,7 @@ fun SendOrReceive(
                     mutableStateOf("")
                 }
                 val context = LocalContext.current
-                val maxChar = 24
+                val maxChar = 4
                 Text(
                     text = "Enter Receiving Code",
                     style = Typography.titleMedium,
