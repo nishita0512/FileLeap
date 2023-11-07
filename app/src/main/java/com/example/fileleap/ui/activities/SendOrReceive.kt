@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,7 +46,8 @@ fun SendOrReceive(
     Column(
         modifier = Modifier
             .padding(scaffoldPadding)
-            .padding(48.dp),
+            .padding(48.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
 
@@ -76,7 +79,6 @@ fun SendOrReceive(
             //Sender Box
             Column(
                 modifier = Modifier
-                    .weight(4f)
                     .fillMaxWidth()
                     .background(Secondary, RoundedCornerShape(16.dp))
                     .padding(8.dp)
@@ -88,7 +90,6 @@ fun SendOrReceive(
                     contentDescription = "Add File",
                     contentScale = ContentScale.Inside,
                     modifier = Modifier
-                        .weight(5f)
                         .padding(8.dp)
                 )
                 Text(
@@ -96,7 +97,6 @@ fun SendOrReceive(
                     style = Typography.titleMedium,
                     color = Color.White,
                     modifier = Modifier
-                        .weight(3f)
                         .padding(8.dp)
                 )
                 Text(
@@ -104,7 +104,6 @@ fun SendOrReceive(
                     style = Typography.bodyMedium,
                     color = Color.White,
                     modifier = Modifier
-                        .weight(2f)
                         .padding(4.dp)
                 )
 
@@ -115,14 +114,12 @@ fun SendOrReceive(
                 style = Typography.titleLarge,
                 color = Color.White,
                 modifier = Modifier
-                    .weight(1f)
                     .padding(8.dp)
             )
 
             //Receiver Box
             Column(
                 modifier = Modifier
-                    .weight(4f)
                     .fillMaxWidth()
                     .background(Secondary, RoundedCornerShape(16.dp))
                     .padding(8.dp),
@@ -138,7 +135,6 @@ fun SendOrReceive(
                     style = Typography.titleMedium,
                     color = Color.White,
                     modifier = Modifier
-                        .weight(1f)
                         .padding(vertical = 4.dp)
                 )
                 OutlinedTextField(
@@ -153,7 +149,6 @@ fun SendOrReceive(
                         textColor = Color.White
                     ),
                     modifier = Modifier
-                        .weight(2f)
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     supportingText = {
                         Text(
@@ -165,7 +160,7 @@ fun SendOrReceive(
                 )
                 Button(
                     onClick = {
-                        if(code.length>24){
+                        if(code.length>4){
                             Toast.makeText(context,"Invalid Code", Toast.LENGTH_SHORT).show()
                         }
                         else{
@@ -178,7 +173,6 @@ fun SendOrReceive(
                         contentColor = Color.Black
                     ),
                     modifier = Modifier
-                        .weight(1.5f)
                         .padding(vertical = 4.dp)
                 ) {
                     Text(

@@ -82,13 +82,7 @@ fun MainScreen(
         ),
         NavigationItem(
             title = "About Us"
-        ),
-        NavigationItem(
-            title = "FAQ"
-        ),
-        NavigationItem(
-            title = "Privacy Policy"
-        ),
+        )
     )
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -182,12 +176,10 @@ fun MainScreen(
                         )
                     }
                     1->{
-                        HowItWorks(
-
-                        )
+                        HowItWorksScreen()
                     }
                     else->{
-
+                        AboutUsScreen()
                     }
                 }
 
@@ -233,11 +225,6 @@ fun FileSharing(
             )
         }
     }
-
-}
-
-@Composable
-fun HowItWorks(){
 
 }
 
